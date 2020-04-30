@@ -1,0 +1,77 @@
+<div th:fragment="html">
+    <script>
+        $(function(){
+            var pid = getUrlParms("pid");
+            var data4Vue = {
+                //后台地址
+                uri:'foreproduct',
+                //product
+                p:'',
+                //所属分类
+                category:null,
+                //第一张图
+                firstProductImage:null,
+                //属性值
+                pvs:[],
+                //评价
+                reviews:[],
+                //切换展示（详情，评价）
+                showDetail:true,
+                showReview:false,
+                //模态框登录
+                user:{name:'', password:''}
+            };
+            //ViewModel
+            var vue = new Vue({
+                el: '#workingArea',
+                data: data4Vue,
+                mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                    linkDefaultActions();
+                    this.load();
+                },
+                methods: {
+                    load:function(){
+                        var url =  this.uri+"/"+pid;
+                        axios.get(url).then(function(response) {
+                            var result = response.data;
+                            vue.p=result.data.product;
+                            vue.pvs=result.data.pvs;
+                            vue.reviews=result.data.reviews;
+
+                            vue.category = vue.p.category;
+                            vue.firstProductImage = vue.p.firstProductImage;
+                            //所有资源加载完成之后
+                            vue.$nextTick(function(){
+                                imgAndInfoPageRegisterListeners(vue);
+                            })
+                        });
+
+                    },
+                    //切换展示（详情，评价）
+                    toggle2Detail:function(){
+                        this.showDetail=true;
+                        this.showReview=false;
+                    },
+                    toggle2Review:function(){
+                        this.showDetail=false;
+                        this.showReview=true;
+                    }
+                }
+            });
+
+        });
+    </script>
+
+    <title>模仿天猫官网 -- {{p.name}}</title>
+    <div class="categoryPictureInProductPageDiv">
+        <img v-if="category!=null" class="categoryPictureInProductPage" :src="'img/category/'+category.id+'.jpg'">
+    </div>
+    <div class="productPageDiv">
+        <!--上半部分-->
+        <div th:replace="include/fore/product/imgAndInfo::html" ></div>
+        <!--评价部分-->
+        <div th:replace="include/fore/product/productReview::html" ></div>
+        <!--商品详情部分-->
+        <div th:replace="include/fore/product/productDetail::html" ></div>
+    </div>
+</div>
